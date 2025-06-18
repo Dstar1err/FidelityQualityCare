@@ -72,7 +72,7 @@ const Home = () => {
                 <div className="absolute inset-0 rounded-full bg-gradient-to-r from-teal-200 to-amber-200 opacity-30 animate-pulse"></div>
                 <div className="relative p-4 z-10">
                   <img
-                    src="assets/patient-rassurant_1098-10599.avif"
+                    src="https://www.google.com/url?sa=i&url=https%3A%2F%2Ffr.freepik.com%2Fphotos-premium%2Fpatient-rassurant_2025236.htm&psig=AOvVaw2eDIWyTaC90yJqSSCPTQ2T&ust=1750360638404000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCMjVn9XX-40DFQAAAAAdAAAAABAT"
                     alt="Compassionate care"
                     className="w-full h-auto rounded-full object-cover shadow-inner"
                     style={{ aspectRatio: '1/1' }}
