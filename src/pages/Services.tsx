@@ -221,10 +221,10 @@ const Services = () => {
               Request an assessment
             </a>
             <a
-              href="tel:208-613-8538"
+              href="tel:208-613-8918"
               className="bg-amber-500 text-white px-8 py-4 rounded-lg font-semibold hover:bg-amber-600 transition-colors duration-200"
             >
-              Call: 208-613-8538
+              Call: 208-613-8918
             </a>
           </div>
         </div>

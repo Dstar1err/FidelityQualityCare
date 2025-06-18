@@ -59,11 +59,11 @@ const Home = () => {
                   Free assessment
                 </Link>
                 <a
-                  href="tel:208-613-8538"
+                  href="tel:208-613-8918"
                   className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-teal-800 transition-colors duration-200 text-center flex items-center justify-center gap-2"
                 >
                   <Phone className="h-5 w-5" />
-                  208-613-8538
+                  208-613-8918
                 </a>
               </div>
             </div>
@@ -206,7 +206,7 @@ const Home = () => {
               Request an assessment
             </Link>
             <a
-              href="tel:208-613-8538"
+              href="tel:208-613-8918"
               className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-amber-600 transition-colors duration-200 flex items-center justify-center gap-2"
             >
               <Phone className="h-5 w-5" />

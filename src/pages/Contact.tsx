@@ -76,10 +76,10 @@ const Contact = () => {
                       Call us for immediate consultation
                     </p>
                     <a 
-                      href="tel:208-613-8538" 
+                      href="tel:208-613-8918" 
                       className="text-teal-600 font-semibold hover:text-teal-700"
                     >
-                      208-613-8538
+                      208-613-8918
                     </a>
                   </div>
                 </div>
@@ -96,10 +96,10 @@ const Contact = () => {
                       Send us a message, we respond quickly
                     </p>
                     <a 
-                      href="mailto:fidelityqualitycare@mail.com" 
+                      href="mailto:fidelityqualitycare@gmail.com" 
                       className="text-teal-600 font-semibold hover:text-teal-700"
                     >
-                      fidelityqualitycare@mail.com
+                      fidelityqualitycare@gmail.com
                     </a>
                   </div>
                 </div>
@@ -145,7 +145,7 @@ const Contact = () => {
                   For urgent situations, contact us immediately
                 </p>
                 <a
-                  href="tel:208-613-8538"
+                  href="tel:208-613-8918"
                   className="bg-amber-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-amber-600 transition-colors duration-200 inline-flex items-center space-x-2"
                 >
                   <Phone className="h-5 w-5" />

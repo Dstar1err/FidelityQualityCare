@@ -24,11 +24,11 @@ const Footer = () => {
             <div className="space-y-3">
               <div className="flex items-center">
                 <Phone className="h-5 w-5 text-teal-400 mr-3" />
-                <span>208-613-8538</span>
+                <span>208-613-8918</span>
               </div>
               <div className="flex items-center">
                 <Mail className="h-5 w-5 text-teal-400 mr-3" />
-                <span>fidelityqualitycare@mail.com</span>
+                <span>fidelityqualitycare@gmail.com</span>
               </div>
               <div className="flex items-center">
                 <MapPin className="h-5 w-5 text-teal-400 mr-3" />
