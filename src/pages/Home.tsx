@@ -68,12 +68,19 @@ const Home = () => {
               </div>
             </div>
             <div className="relative">
-              <div className="bg-white rounded-full p-8 shadow-2xl">
-                <img
-                  src="/lovable-uploads/a5ad6ed9-1c5d-4055-a7cc-0fa78505b756.png"
-                  alt="Compassionate care"
-                  className="w-full h-auto rounded-lg"
-                />
+              <div className="relative bg-white rounded-full p-2 shadow-2xl transform transition-transform duration-500 hover:scale-105">
+                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-teal-200 to-amber-200 opacity-30 animate-pulse"></div>
+                <div className="relative p-4 z-10">
+                  <img
+                    src="assets/patient-rassurant_1098-10599.avif"
+                    alt="Compassionate care"
+                    className="w-full h-auto rounded-full object-cover shadow-inner"
+                    style={{ aspectRatio: '1/1' }}
+                  />
+                </div>
+                <div className="absolute -bottom-3 -right-3 bg-amber-500 text-white p-4 rounded-full shadow-lg z-20 transform rotate-12">
+                  <span className="font-bold text-sm">Quality Care</span>
+                </div>
               </div>
             </div>
           </div>
