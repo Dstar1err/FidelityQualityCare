@@ -72,7 +72,7 @@ const Home = () => {
                 <div className="absolute inset-0 rounded-full bg-gradient-to-r from-teal-200 to-amber-200 opacity-30 animate-pulse"></div>
                 <div className="relative p-4 z-10">
                   <img
-                    src="public\assets\patient-rassurant_1098-10599.avif"
+                    src="/assets/patient-rassurant_1098-10599.avif"
                     alt="Compassionate care"
                     className="w-full h-auto rounded-full object-cover shadow-inner"
                     style={{ aspectRatio: '1/1' }}
