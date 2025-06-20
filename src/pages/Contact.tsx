@@ -2,7 +2,7 @@
 import React, { useState, useRef } from 'react';
 import { Phone, Mail, MapPin, Clock, Send, CheckCircle } from 'lucide-react';
 import { EMAIL_CONFIG } from '../config/emailjs';
-import { incrementFamiliesCountInSupabase } from '../services/supabaseService';
+
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -48,7 +48,6 @@ const Contact = () => {
       // When the confirmUrl is clicked, it will navigate to the ConfirmRequest page
       // which calls incrementFamiliesCountInSupabase() to update the families count in Supabase
       const confirmUrl = `${window.location.origin}/confirm?name=${encodeURIComponent(formData.name)}&email=${encodeURIComponent(formData.email)}`;
-      const assignUrl = `${window.location.origin}/assign?name=${encodeURIComponent(formData.name)}&email=${encodeURIComponent(formData.email)}`;
       
       // Add action buttons to the message
       const actionMessage = `
@@ -57,11 +56,10 @@ const Contact = () => {
 
 ACTIONS REQUISES:
 
-Cliquez sur l'un des liens ci-dessous pour mettre à jour les statistiques:
+Click on one of the links below to update the statistics:
 
-1. CONFIRMER LA RÉCEPTION: ${confirmUrl}
+1. CONFIRM RECEIPT: ${confirmUrl}
 
-2. PRENDRE EN CHARGE: ${assignUrl}
       `;
       
       // Append the action message to the original message
@@ -71,10 +69,9 @@ Cliquez sur l'un des liens ci-dessous pour mettre à jour les statistiques:
       const htmlContent = `
         <div style="margin-top: 20px; border-top: 1px solid #ccc; padding-top: 20px;">
           <p style="font-weight: bold; font-size: 16px;">ACTIONS REQUISES:</p>
-          <p>Cliquez sur l'un des boutons ci-dessous pour mettre à jour les statistiques:</p>
+          <p>Click on one of the links below to update the statistics:</p>
           <div style="margin-top: 15px;">
-            <a href="${confirmUrl}" style="display: inline-block; background-color: #0D9488; color: white; padding: 10px 20px; margin-right: 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">CONFIRMER LA RÉCEPTION</a>
-            <a href="${assignUrl}" style="display: inline-block; background-color: #0369A1; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">PRENDRE EN CHARGE</a>
+            <a href="${confirmUrl}" style="display: inline-block; background-color: #0D9488; color: white; padding: 10px 20px; margin-right: 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">CONFIRM RECEIPT</a>
           </div>
         </div>
       `;
@@ -90,7 +87,6 @@ Cliquez sur l'un des liens ci-dessous pour mettre à jour les statistiques:
       });
       
       if (response.ok) {
-        console.log('Form submitted successfully!');
         setIsSubmitted(true);
         
         // Reset form after 3 seconds

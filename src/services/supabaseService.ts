@@ -114,8 +114,6 @@ export const getStatsFromSupabase = async (): Promise<Stats> => {
     .eq('id', STATS_ID)
     .single();
 
-    console.log("datass", data);
-
   if (error) {
     console.error('Erreur lors de la récupération des statistiques:', error);
     // Retourner des valeurs par défaut en cas d'erreur
@@ -136,7 +134,6 @@ export const incrementFamiliesCountInSupabase = async (): Promise<Stats> => {
   try {
     // D'abord, récupérer les statistiques actuelles
     const currentStats = await getStatsFromSupabase();
-    console.log("currentStats avant mise à jour:", currentStats);
     
     if (!currentStats || typeof currentStats.familiesCount !== 'number') {
       console.error('Statistiques invalides:', currentStats);
@@ -147,15 +144,12 @@ export const incrementFamiliesCountInSupabase = async (): Promise<Stats> => {
     const newFamiliesCount = currentStats.familiesCount + 1;
     const now = new Date().toISOString();
     
-    console.log(`Mise à jour du compteur: ${currentStats.familiesCount} -> ${newFamiliesCount}`);
     
     // Créer un objet de mise à jour explicite (sans référence à l'objet original)
     const updateData = {
       familiesCount: newFamiliesCount,
       lastUpdated: now
     };
-
-    console.log("Données de mise à jour:", updateData);
     
     // Effectuer la mise à jour dans Supabase
     const { data, error } = await supabase
@@ -164,17 +158,13 @@ export const incrementFamiliesCountInSupabase = async (): Promise<Stats> => {
       .eq('id', STATS_ID)
       .select();
 
-    console.log("Réponse de mise à jour:", { data, error });
-
     if (error) {
       console.error('Erreur lors de la mise à jour des statistiques:', error);
       return currentStats;
     }
 
     // Si la mise à jour a réussi mais n'a pas retourné de données, récupérer les données mises à jour
-    if (!data || data.length === 0) {
-      console.log("Aucune donnée retournée par la mise à jour, récupération des données actuelles...");
-      
+    if (!data || data.length === 0) {      
       const { data: fetchedData, error: fetchError } = await supabase
         .from(STATS_TABLE)
         .select('*')
@@ -191,12 +181,9 @@ export const incrementFamiliesCountInSupabase = async (): Promise<Stats> => {
         };
       }
       
-      console.log("Données récupérées après mise à jour:", fetchedData);
       return fetchedData;
     }
     
-    // Si la mise à jour a retourné des données directement
-    console.log("Données mises à jour:", data[0]);
     return data[0];
   } catch (err) {
     console.error('Exception lors de la mise à jour des statistiques:', err);

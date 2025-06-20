@@ -351,7 +351,7 @@ const Testimonials = () => {
                 </div>
                 <div className="ml-3">
                   <p className="text-sm font-medium text-teal-800">
-                    Merci pour votre témoignage ! Il a été ajouté avec succès.
+                    Thank you for your testimonial! It has been added successfully.
                   </p>
                 </div>
               </div>

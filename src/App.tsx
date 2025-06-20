@@ -11,7 +11,6 @@ import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Testimonials from "./pages/Testimonials";
 import ConfirmRequest from "./pages/ConfirmRequest";
-import AssignRequest from "./pages/AssignRequest";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,7 +29,6 @@ const App = () => (
             <Route path="/contact" element={<Contact />} />
             <Route path="/testimonials" element={<Testimonials />} />
             <Route path="/confirm" element={<ConfirmRequest />} />
-            <Route path="/assign" element={<AssignRequest />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Layout>
