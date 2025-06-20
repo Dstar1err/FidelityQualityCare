@@ -2,6 +2,7 @@
 import React, { useState, useRef } from 'react';
 import { Phone, Mail, MapPin, Clock, Send, CheckCircle } from 'lucide-react';
 import { EMAIL_CONFIG } from '../config/emailjs';
+import { incrementFamiliesCountInSupabase } from '../services/supabaseService';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -44,6 +45,8 @@ const Contact = () => {
       formDataObj.append('_template', 'box'); // Use box template for better formatting
       
       // Create HTML content with action buttons
+      // When the confirmUrl is clicked, it will navigate to the ConfirmRequest page
+      // which calls incrementFamiliesCountInSupabase() to update the families count in Supabase
       const confirmUrl = `${window.location.origin}/confirm?name=${encodeURIComponent(formData.name)}&email=${encodeURIComponent(formData.email)}`;
       const assignUrl = `${window.location.origin}/assign?name=${encodeURIComponent(formData.name)}&email=${encodeURIComponent(formData.email)}`;
       

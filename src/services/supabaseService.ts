@@ -135,6 +135,7 @@ export const getStatsFromSupabase = async (): Promise<Stats> => {
 export const incrementFamiliesCountInSupabase = async (): Promise<Stats> => {
   // D'abord, récupérer les statistiques actuelles
   const currentStats = await getStatsFromSupabase();
+  console.log("currentStats", currentStats);
   
   // Incrémenter le compteur
   const updatedStats = {
@@ -148,8 +149,6 @@ export const incrementFamiliesCountInSupabase = async (): Promise<Stats> => {
     .from(STATS_TABLE)
     .update(updatedStats)
     .eq('id', STATS_ID)
-    .select()
-    .single();
 
   if (error) {
     console.error('Erreur lors de la mise à jour des statistiques:', error);
