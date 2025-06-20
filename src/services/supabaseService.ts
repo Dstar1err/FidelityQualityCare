@@ -133,29 +133,76 @@ export const getStatsFromSupabase = async (): Promise<Stats> => {
  * Incrémente le compteur de familles dans Supabase
  */
 export const incrementFamiliesCountInSupabase = async (): Promise<Stats> => {
-  // D'abord, récupérer les statistiques actuelles
-  const currentStats = await getStatsFromSupabase();
-  console.log("currentStats", currentStats);
-  
-  // Incrémenter le compteur
-  const updatedStats = {
-    ...currentStats,
-    familiesCount: currentStats.familiesCount + 1,
-    lastUpdated: new Date().toISOString()
-  };
+  try {
+    // D'abord, récupérer les statistiques actuelles
+    const currentStats = await getStatsFromSupabase();
+    console.log("currentStats avant mise à jour:", currentStats);
+    
+    if (!currentStats || typeof currentStats.familiesCount !== 'number') {
+      console.error('Statistiques invalides:', currentStats);
+      return currentStats || { familiesCount: 95, lastUpdated: new Date().toISOString(), foundingYear: 2019 };
+    }
+    
+    // Préparer les données pour la mise à jour
+    const newFamiliesCount = currentStats.familiesCount + 1;
+    const now = new Date().toISOString();
+    
+    console.log(`Mise à jour du compteur: ${currentStats.familiesCount} -> ${newFamiliesCount}`);
+    
+    // Créer un objet de mise à jour explicite (sans référence à l'objet original)
+    const updateData = {
+      familiesCount: newFamiliesCount,
+      lastUpdated: now
+    };
 
-  // Mettre à jour dans Supabase
-  const { data, error } = await supabase
-    .from(STATS_TABLE)
-    .update(updatedStats)
-    .eq('id', STATS_ID)
+    console.log("Données de mise à jour:", updateData);
+    
+    // Effectuer la mise à jour dans Supabase
+    const { data, error } = await supabase
+      .from(STATS_TABLE)
+      .update(updateData)
+      .eq('id', STATS_ID)
+      .select();
 
-  if (error) {
-    console.error('Erreur lors de la mise à jour des statistiques:', error);
-    return currentStats;
+    console.log("Réponse de mise à jour:", { data, error });
+
+    if (error) {
+      console.error('Erreur lors de la mise à jour des statistiques:', error);
+      return currentStats;
+    }
+
+    // Si la mise à jour a réussi mais n'a pas retourné de données, récupérer les données mises à jour
+    if (!data || data.length === 0) {
+      console.log("Aucune donnée retournée par la mise à jour, récupération des données actuelles...");
+      
+      const { data: fetchedData, error: fetchError } = await supabase
+        .from(STATS_TABLE)
+        .select('*')
+        .eq('id', STATS_ID)
+        .single();
+      
+      if (fetchError) {
+        console.error('Erreur lors de la récupération des statistiques après mise à jour:', fetchError);
+        // Retourner un objet avec les valeurs mises à jour, même si la récupération a échoué
+        return {
+          ...currentStats,
+          familiesCount: newFamiliesCount,
+          lastUpdated: now
+        };
+      }
+      
+      console.log("Données récupérées après mise à jour:", fetchedData);
+      return fetchedData;
+    }
+    
+    // Si la mise à jour a retourné des données directement
+    console.log("Données mises à jour:", data[0]);
+    return data[0];
+  } catch (err) {
+    console.error('Exception lors de la mise à jour des statistiques:', err);
+    // Récupérer les statistiques actuelles en cas d'erreur
+    return await getStatsFromSupabase();
   }
-
-  return data;
 };
 
 /**
