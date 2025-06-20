@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Heart, Shield, Users, Award, CheckCircle, Target } from 'lucide-react';
+import { getStats, getFormattedYearsOfExperience } from '../services/statsService';
 
 const About = () => {
   const values = [
@@ -27,7 +28,7 @@ const About = () => {
   ];
 
   const achievements = [
-    'Over 10 years of experience in home care',
+    `Over ${getFormattedYearsOfExperience()} years of experience in home care`,
     'Certified and regularly trained staff',
     'Service available 24/7',
     'Personalized approach for each client',
@@ -45,7 +46,7 @@ const About = () => {
               About Fidelity Quality Care
             </h1>
             <p className="text-xl text-teal-100 max-w-3xl mx-auto">
-              For over 10 years, we have been committed to providing 
+              For over {getFormattedYearsOfExperience()} years, we have been committed to providing 
               exceptional quality home care for elderly and those in need.
             </p>
           </div>

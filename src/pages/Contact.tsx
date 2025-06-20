@@ -1,6 +1,7 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Phone, Mail, MapPin, Clock, Send, CheckCircle } from 'lucide-react';
+import { EMAIL_CONFIG } from '../config/emailjs';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -19,21 +20,96 @@ const Contact = () => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const formRef = useRef<HTMLFormElement>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    setIsSubmitted(true);
-    // Reset form after 3 seconds
-    setTimeout(() => {
-      setIsSubmitted(false);
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        service: '',
-        message: ''
+    setLoading(true);
+    setError('');
+    
+    try {
+      // Create form data object
+      const formDataObj = new FormData();
+      formDataObj.append('name', formData.name);
+      formDataObj.append('email', formData.email);
+      formDataObj.append('phone', formData.phone);
+      formDataObj.append('service', formData.service || 'Not specified');
+      formDataObj.append('message', formData.message);
+      
+      // Add specific FormSubmit.co options
+      formDataObj.append('_subject', 'New Contact Form Submission - Fidelity Quality Care');
+      formDataObj.append('_captcha', 'false'); // Disable captcha
+      formDataObj.append('_template', 'box'); // Use box template for better formatting
+      
+      // Create HTML content with action buttons
+      const confirmUrl = `${window.location.origin}/confirm?name=${encodeURIComponent(formData.name)}&email=${encodeURIComponent(formData.email)}`;
+      const assignUrl = `${window.location.origin}/assign?name=${encodeURIComponent(formData.name)}&email=${encodeURIComponent(formData.email)}`;
+      
+      // Add action buttons to the message
+      const actionMessage = `
+
+---
+
+ACTIONS REQUISES:
+
+Cliquez sur l'un des liens ci-dessous pour mettre à jour les statistiques:
+
+1. CONFIRMER LA RÉCEPTION: ${confirmUrl}
+
+2. PRENDRE EN CHARGE: ${assignUrl}
+      `;
+      
+      // Append the action message to the original message
+      formDataObj.append('message', formData.message + actionMessage);
+      
+      // Add HTML content for email body with styled buttons
+      const htmlContent = `
+        <div style="margin-top: 20px; border-top: 1px solid #ccc; padding-top: 20px;">
+          <p style="font-weight: bold; font-size: 16px;">ACTIONS REQUISES:</p>
+          <p>Cliquez sur l'un des boutons ci-dessous pour mettre à jour les statistiques:</p>
+          <div style="margin-top: 15px;">
+            <a href="${confirmUrl}" style="display: inline-block; background-color: #0D9488; color: white; padding: 10px 20px; margin-right: 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">CONFIRMER LA RÉCEPTION</a>
+            <a href="${assignUrl}" style="display: inline-block; background-color: #0369A1; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">PRENDRE EN CHARGE</a>
+          </div>
+        </div>
+      `;
+      formDataObj.append('_message', htmlContent);
+      
+      // Send the form data
+      const response = await fetch(EMAIL_CONFIG.FORM_ENDPOINT, {
+        method: 'POST',
+        body: formDataObj,
+        headers: {
+          'Accept': 'application/json'
+        }
       });
-    }, 3000);
+      
+      if (response.ok) {
+        console.log('Form submitted successfully!');
+        setIsSubmitted(true);
+        
+        // Reset form after 3 seconds
+        setTimeout(() => {
+          setIsSubmitted(false);
+          setFormData({
+            name: '',
+            email: '',
+            phone: '',
+            service: '',
+            message: ''
+          });
+        }, 3000);
+      } else {
+        throw new Error('Form submission failed');
+      }
+    } catch (err) {
+      console.error('Failed to send form:', err);
+      setError('Failed to send your request. Please try again or contact us directly.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -129,9 +205,6 @@ const Contact = () => {
                     <p className="text-gray-600">
                       24 hours a day, 7 days a week
                     </p>
-                    <p className="text-sm text-gray-500 mt-1">
-                      Minimum 4 hours per visit
-                    </p>
                   </div>
                 </div>
               </div>
@@ -170,8 +243,36 @@ const Contact = () => {
                     We will contact you as soon as possible to schedule your free assessment.
                   </p>
                 </div>
+              ) : error ? (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-8 text-center mb-6">
+                  <h3 className="text-xl font-bold text-red-800 mb-2">
+                    Error
+                  </h3>
+                  <p className="text-red-700 mb-4">
+                    {error}
+                  </p>
+                  <button 
+                    onClick={() => setError('')}
+                    className="bg-red-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-700 transition-colors duration-200"
+                  >
+                    Try Again
+                  </button>
+                </div>
               ) : (
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form 
+                  ref={formRef} 
+                  onSubmit={handleSubmit} 
+                  className="space-y-6"
+                  action={EMAIL_CONFIG.FORM_ENDPOINT}
+                  method="POST"
+                >
+                  {/* Hidden fields for FormSubmit.co configuration */}
+                  <input type="hidden" name="_subject" value="New Contact Form - Fidelity Quality Care" />
+                  <input type="hidden" name="_captcha" value="false" />
+                  <input type="hidden" name="_template" value="box" />
+                  <input type="hidden" name="_next" value={window.location.href} />
+                  <input type="hidden" name="_autoresponse" value="Merci pour votre message. Notre équipe vous contactera sous peu." />
+                
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
                       <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
@@ -260,10 +361,20 @@ const Contact = () => {
                   
                   <button
                     type="submit"
-                    className="w-full bg-teal-600 text-white px-8 py-4 rounded-lg font-semibold hover:bg-teal-700 transition-colors duration-200 flex items-center justify-center space-x-2"
+                    disabled={loading}
+                    className={`w-full bg-teal-600 text-white px-8 py-4 rounded-lg font-semibold hover:bg-teal-700 transition-colors duration-200 flex items-center justify-center space-x-2 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
                   >
-                    <Send className="h-5 w-5" />
-                    <span>Send Request</span>
+                    {loading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                        <span>Sending...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Send className="h-5 w-5" />
+                        <span>Send Request</span>
+                      </>
+                    )}
                   </button>
                   
                   <p className="text-sm text-gray-500 text-center">
@@ -303,7 +414,6 @@ const Contact = () => {
               </h3>
               <p className="text-gray-600">
                 Our rates vary according to the services required and the frequency of visits. 
-                We offer competitive rates with a minimum of 4 hours per visit. 
                 Contact us for a personalized quote.
               </p>
             </div>

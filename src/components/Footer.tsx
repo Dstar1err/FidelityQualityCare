@@ -58,9 +58,6 @@ const Footer = () => {
               <div>
                 <p className="text-gray-300">24 hours a day</p>
                 <p className="text-gray-300">7 days a week</p>
-                <p className="text-gray-300 text-sm mt-2">
-                  Minimum 4 hours per visit
-                </p>
               </div>
             </div>
           </div>

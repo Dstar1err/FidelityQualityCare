@@ -1,59 +1,94 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Star, Quote, Heart, Users } from 'lucide-react';
+import { getTestimonials, addTestimonial as saveTestimonial, calculateStats, Testimonial } from '../services/testimonialService';
+
+// Custom hook for managing testimonials and satisfaction statistics
+const useTestimonials = () => {
+  // State for testimonials and stats
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [stats, setStats] = useState(calculateStats());
+
+  // Load testimonials from localStorage on component mount
+  useEffect(() => {
+    const loadedTestimonials = getTestimonials();
+    setTestimonials(loadedTestimonials);
+    setStats(calculateStats());
+  }, []);
+
+  // Function to add a new testimonial
+  const addTestimonial = (newTestimonial: Omit<Testimonial, 'id' | 'date'>) => {
+    const savedTestimonial = saveTestimonial(newTestimonial);
+    setTestimonials([...testimonials, savedTestimonial]);
+    setStats(calculateStats());
+  };
+
+  return {
+    testimonials,
+    stats,
+    addTestimonial
+  };
+};
 
 const Testimonials = () => {
-  const testimonials = [
-    {
-      name: 'Marie Johnson',
-      relation: 'Daughter of Mrs. Johnson (85 years old)',
-      rating: 5,
-      text: 'Fidelity Quality Care has transformed my mother\'s life. Their caregivers are not only professional but also very caring. My mother feels safe and happy at home.',
-      service: 'Comprehensive home care'
-    },
-    {
-      name: 'John Martin',
-      relation: 'Client (78 years old)',
-      rating: 5,
-      text: 'After my accident, I needed help with daily tasks. The Fidelity team helped me regain my independence gradually. Their patience and professionalism are remarkable.',
-      service: 'Post-hospital assistance'
-    },
-    {
-      name: 'Sophie Wilson',
-      relation: 'Wife of Mr. Wilson (82 years old)',
-      rating: 5,
-      text: 'My husband suffers from dementia and I was exhausted. Thanks to Fidelity Quality Care, I can have moments of respite knowing he is in good hands. Their compassion makes all the difference.',
-      service: 'Specialized dementia care'
-    },
-    {
-      name: 'Paul Davis',
-      relation: 'Son of Mr. Davis (90 years old)',
-      rating: 5,
-      text: 'Dad was reluctant to accept help, but the Fidelity team was able to gain his trust. Now he looks forward to his caregiver\'s visits. Thank you for your professionalism.',
-      service: 'Daily assistance'
-    },
-    {
-      name: 'Lucy Brown',
-      relation: 'Daughter of Mrs. Brown (79 years old)',
-      rating: 5,
-      text: 'My mother lives alone and I live far away. Fidelity Quality Care gives me peace of mind by taking care of her with such care. They regularly keep me informed of her condition.',
-      service: 'Monitoring and assistance'
-    },
-    {
-      name: 'Robert Miller',
-      relation: 'Client (75 years old)',
-      rating: 5,
-      text: 'I highly recommend Fidelity Quality Care. Their help with meals, medications and housekeeping allows me to stay home safely. The staff is wonderful.',
-      service: 'Multiple services'
+  // Use our custom hook
+  const { testimonials, stats, addTestimonial } = useTestimonials();
+  
+  // Form state
+  const [newTestimonial, setNewTestimonial] = useState<Omit<Testimonial, 'id' | 'date'>>({ 
+    name: '',
+    relation: '',
+    rating: 0,
+    text: '',
+    service: ''
+  });
+  
+  // Temporary rating for the hover effect
+  const [hoverRating, setHoverRating] = useState(0);
+  
+  // State for confirmation message
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  
+  // Form submission handler
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newTestimonial.name && newTestimonial.text && newTestimonial.rating > 0) {
+      addTestimonial(newTestimonial);
+      // Reset form
+      setNewTestimonial({
+        name: '',
+        relation: '',
+        rating: 0,
+        text: '',
+        service: ''
+      });
+      
+      // Afficher le message de confirmation
+      setShowConfirmation(true);
+      
+      // Masquer le message après 5 secondes
+      setTimeout(() => {
+        setShowConfirmation(false);
+      }, 5000);
     }
-  ];
-
-  const stats = [
-    { number: '98%', label: 'Satisfaction rate' },
-    { number: '500+', label: 'Families helped' },
-    { number: '24/7', label: 'Availability' },
-    { number: '10+', label: 'Years of experience' }
-  ];
+  };
+  
+  // Handle input changes
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setNewTestimonial({
+      ...newTestimonial,
+      [name]: value
+    });
+  };
+  
+  // Handle star rating selection
+  const handleRatingClick = (rating: number) => {
+    setNewTestimonial({
+      ...newTestimonial,
+      rating
+    });
+  };
 
   return (
     <div className="min-h-screen">
@@ -103,8 +138,8 @@ const Testimonials = () => {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <div key={index} className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-shadow duration-300">
+            {testimonials.map((testimonial) => (
+              <div key={testimonial.id} className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-shadow duration-300">
                 {/* Quote Icon */}
                 <div className="text-teal-600 mb-4">
                   <Quote className="h-8 w-8" />
@@ -226,6 +261,145 @@ const Testimonials = () => {
               </p>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Testimonial Submission Form */}
+      <section className="py-16 bg-white">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Share Your Experience
+            </h2>
+            <p className="text-xl text-gray-600">
+              Your feedback helps us improve and inspires others
+            </p>
+          </div>
+          
+          {showConfirmation && (
+            <div className="mb-6 bg-teal-100 border-l-4 border-teal-600 p-4 rounded-md animate-fade-in">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-teal-600" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-teal-800">
+                    Merci pour votre témoignage ! Il a été ajouté avec succès.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <form onSubmit={handleSubmit} className="bg-gray-50 rounded-xl shadow-md p-8">
+            <div className="mb-6">
+              <label htmlFor="name" className="block text-gray-700 font-medium mb-2">
+                Your Name
+              </label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                value={newTestimonial.name}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                required
+              />
+            </div>
+            
+            <div className="mb-6">
+              <label htmlFor="relation" className="block text-gray-700 font-medium mb-2">
+                Relationship to Client (e.g., "Client", "Daughter of client")
+              </label>
+              <input
+                type="text"
+                id="relation"
+                name="relation"
+                value={newTestimonial.relation}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                
+              />
+            </div>
+            
+            <div className="mb-6">
+              <label htmlFor="service" className="block text-gray-700 font-medium mb-2">
+                Service Received
+              </label>
+              <select
+                id="service"
+                name="service"
+                value={newTestimonial.service}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                required
+              >
+                <option value="">Select a service</option>
+                <option value="Comprehensive home care">Comprehensive home care</option>
+                <option value="Post-hospital assistance">Post-hospital assistance</option>
+                <option value="Specialized dementia care">Specialized dementia care</option>
+                <option value="Daily assistance">Daily assistance</option>
+                <option value="Monitoring and assistance">Monitoring and assistance</option>
+                <option value="Multiple services">Multiple services</option>
+              </select>
+            </div>
+            
+            <div className="mb-6">
+              <label className="block text-gray-700 font-medium mb-2">
+                Your Rating
+              </label>
+              <div className="flex items-center space-x-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => handleRatingClick(star)}
+                    onMouseEnter={() => setHoverRating(star)}
+                    onMouseLeave={() => setHoverRating(0)}
+                    className="focus:outline-none"
+                    
+                  >
+                    <Star 
+                      className={`h-8 w-8 ${
+                        (hoverRating || newTestimonial.rating) >= star 
+                          ? 'text-yellow-400 fill-current' 
+                          : 'text-gray-300'
+                      }`} 
+                    />
+                  </button>
+                ))}
+                <span className="ml-2 text-gray-600">
+                  {newTestimonial.rating > 0 ? `${newTestimonial.rating} star${newTestimonial.rating > 1 ? 's' : ''}` : 'Select a rating'}
+                </span>
+              </div>
+            </div>
+            
+            <div className="mb-6">
+              <label htmlFor="text" className="block text-gray-700 font-medium mb-2">
+                Your Testimonial
+              </label>
+              <textarea
+                id="text"
+                name="text"
+                value={newTestimonial.text}
+                onChange={handleInputChange}
+                rows={4}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                required
+              ></textarea>
+            </div>
+            
+            <div className="text-center">
+              <button
+                type="submit"
+                className="bg-teal-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-teal-700 transition-colors duration-200"
+              >
+                Submit Your Testimonial
+              </button>
+            </div>
+          </form>
         </div>
       </section>
 

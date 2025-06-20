@@ -1,9 +1,34 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, Shield, Clock, Users, Phone, CheckCircle } from 'lucide-react';
+import { getStats, getFormattedYearsOfExperience } from '../services/statsService';
+import { getSatisfactionRate } from '../services/testimonialService';
 
 const Home = () => {
+  // State for dynamic statistics
+  const [familiesCount, setFamiliesCount] = useState<number>(95);
+  const [satisfactionRate, setSatisfactionRate] = useState<number>(98);
+  const [yearsOfExperience, setYearsOfExperience] = useState<string>('6+');
+  
+  // Load stats from localStorage on component mount
+  useEffect(() => {
+    const stats = getStats();
+    setFamiliesCount(stats.familiesCount);
+    setSatisfactionRate(getSatisfactionRate());
+    setYearsOfExperience(getFormattedYearsOfExperience());
+    
+    // Set up an interval to check for updates
+    const interval = setInterval(() => {
+      const updatedStats = getStats();
+      setFamiliesCount(updatedStats.familiesCount);
+      setSatisfactionRate(getSatisfactionRate());
+      setYearsOfExperience(getFormattedYearsOfExperience());
+    }, 5000); // Check every 5 seconds
+    
+    return () => clearInterval(interval);
+  }, []);
+  
   const services = [
     {
       icon: Heart,
@@ -28,10 +53,10 @@ const Home = () => {
   ];
 
   const stats = [
-    { number: '10+', label: 'Years of experience' },
-    { number: '500+', label: 'Families served' },
+    { number: yearsOfExperience, label: 'Years of experience' },
+    { number: `${familiesCount}+`, label: 'Families served' },
     { number: '24h', label: 'Availability' },
-    { number: '100%', label: 'Client satisfaction' }
+    { number: `${satisfactionRate}%`, label: 'Client satisfaction' }
   ];
 
   return (
@@ -179,9 +204,6 @@ const Home = () => {
                 </h3>
                 <p className="text-lg text-gray-700 mb-4">
                   Our caregivers are available 24 hours a day, 7 days a week
-                </p>
-                <p className="text-teal-700 font-semibold">
-                  Minimum 4 hours per visit
                 </p>
               </div>
             </div>
