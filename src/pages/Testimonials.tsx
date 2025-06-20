@@ -3,7 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { Star, Quote, Heart, Users } from 'lucide-react';
 import { Testimonial } from '../services/testimonialService';
 import { getTestimonialsFromSupabase, addTestimonialToSupabase, calculateStatsFromSupabase } from '../services/supabaseService';
-import { useSupabaseInit, useSupabaseData } from '../hooks/useSupabase';
+import { useSupabaseInit } from '../hooks/useSupabase';
+import { useStats } from '../hooks/useStats';
 
 // Custom hook for managing testimonials and satisfaction statistics
 const useTestimonials = () => {
@@ -25,6 +26,9 @@ const useTestimonials = () => {
         setIsLoading(true);
         const loadedTestimonials = await getTestimonialsFromSupabase();
         const calculatedStats = await calculateStatsFromSupabase();
+
+        console.log("loadedTestimonials", loadedTestimonials);
+        console.log("calculatedStats", calculatedStats);
         
         setTestimonials(loadedTestimonials);
         setStats(calculatedStats);
@@ -78,8 +82,21 @@ const useTestimonials = () => {
 };
 
 const Testimonials = () => {
-  // Use our custom hook
-  const { testimonials, stats, addTestimonial, isLoading, error } = useTestimonials();
+  // Use our custom hooks
+  const { testimonials, stats: testimonialStats, addTestimonial, isLoading: isLoadingTestimonials, error: testimonialError } = useTestimonials();
+  const { satisfactionRate, familiesCount, yearsOfExperience, isLoading: isLoadingStats, error: statsError } = useStats();
+  
+  // Combine stats from both sources
+  const stats = [
+    { number: `${satisfactionRate}%`, label: 'Satisfaction rate' },
+    { number: `${familiesCount}+`, label: 'Families helped' },
+    { number: '24/7', label: 'Support available' },
+    { number: yearsOfExperience, label: 'Years of experience' }
+  ];
+  
+  // Combined loading and error states
+  const isLoading = isLoadingTestimonials || isLoadingStats;
+  const error = testimonialError || statsError;
   
   // Form state
   const [newTestimonial, setNewTestimonial] = useState<Omit<Testimonial, 'id' | 'date'>>({ 

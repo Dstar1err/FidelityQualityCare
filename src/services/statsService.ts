@@ -1,6 +1,6 @@
 // Service to manage statistics like families served
 
-interface Stats {
+export interface Stats {
   familiesCount: number;
   lastUpdated: Date;
   foundingYear?: number;
