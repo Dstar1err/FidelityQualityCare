@@ -1,38 +1,85 @@
 
 import React, { useState, useEffect } from 'react';
 import { Star, Quote, Heart, Users } from 'lucide-react';
-import { getTestimonials, addTestimonial as saveTestimonial, calculateStats, Testimonial } from '../services/testimonialService';
+import { Testimonial } from '../services/testimonialService';
+import { getTestimonialsFromSupabase, addTestimonialToSupabase, calculateStatsFromSupabase } from '../services/supabaseService';
+import { useSupabaseInit, useSupabaseData } from '../hooks/useSupabase';
 
 // Custom hook for managing testimonials and satisfaction statistics
 const useTestimonials = () => {
   // State for testimonials and stats
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
-  const [stats, setStats] = useState(calculateStats());
+  const [stats, setStats] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Load testimonials from localStorage on component mount
+  // Initialize Supabase
+  const { isLoading: isInitializing, error: initError } = useSupabaseInit();
+
+  // Load testimonials from Supabase on component mount
   useEffect(() => {
-    const loadedTestimonials = getTestimonials();
-    setTestimonials(loadedTestimonials);
-    setStats(calculateStats());
-  }, []);
+    if (isInitializing || initError) return;
+
+    const loadData = async () => {
+      try {
+        setIsLoading(true);
+        const loadedTestimonials = await getTestimonialsFromSupabase();
+        const calculatedStats = await calculateStatsFromSupabase();
+        
+        setTestimonials(loadedTestimonials);
+        setStats(calculatedStats);
+        setIsLoading(false);
+      } catch (err) {
+        console.error('Error loading testimonials:', err);
+        setError('Unable to load testimonials. Please try again later.');
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+
+    // Set up interval to refresh data
+    const interval = setInterval(async () => {
+      try {
+        const calculatedStats = await calculateStatsFromSupabase();
+        setStats(calculatedStats);
+      } catch (err) {
+        console.error('Error refreshing stats:', err);
+      }
+    }, 10000); // Refresh every 10 seconds
+
+    return () => clearInterval(interval);
+  }, [isInitializing, initError]);
 
   // Function to add a new testimonial
-  const addTestimonial = (newTestimonial: Omit<Testimonial, 'id' | 'date'>) => {
-    const savedTestimonial = saveTestimonial(newTestimonial);
-    setTestimonials([...testimonials, savedTestimonial]);
-    setStats(calculateStats());
+  const addTestimonial = async (newTestimonial: Omit<Testimonial, 'id' | 'date'>) => {
+    try {
+      const savedTestimonial = await addTestimonialToSupabase(newTestimonial);
+      setTestimonials([savedTestimonial, ...testimonials]);
+      
+      // Update stats after adding testimonial
+      const updatedStats = await calculateStatsFromSupabase();
+      setStats(updatedStats);
+      
+      return savedTestimonial;
+    } catch (err) {
+      console.error('Error adding testimonial:', err);
+      throw err;
+    }
   };
 
   return {
     testimonials,
     stats,
-    addTestimonial
+    addTestimonial,
+    isLoading,
+    error: error || initError
   };
 };
 
 const Testimonials = () => {
   // Use our custom hook
-  const { testimonials, stats, addTestimonial } = useTestimonials();
+  const { testimonials, stats, addTestimonial, isLoading, error } = useTestimonials();
   
   // Form state
   const [newTestimonial, setNewTestimonial] = useState<Omit<Testimonial, 'id' | 'date'>>({ 
@@ -50,26 +97,27 @@ const Testimonials = () => {
   const [showConfirmation, setShowConfirmation] = useState(false);
   
   // Form submission handler
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newTestimonial.name && newTestimonial.text && newTestimonial.rating > 0) {
-      addTestimonial(newTestimonial);
-      // Reset form
-      setNewTestimonial({
-        name: '',
-        relation: '',
-        rating: 0,
-        text: '',
-        service: ''
-      });
-      
-      // Afficher le message de confirmation
-      setShowConfirmation(true);
-      
-      // Masquer le message après 5 secondes
-      setTimeout(() => {
-        setShowConfirmation(false);
-      }, 5000);
+      try {
+        await addTestimonial(newTestimonial);
+        setShowConfirmation(true);
+        setTimeout(() => setShowConfirmation(false), 5000);
+        
+        // Reset form
+        setNewTestimonial({
+          name: '',
+          relation: '',
+          rating: 0,
+          text: '',
+          service: ''
+        });
+        setHoverRating(0);
+      } catch (err) {
+        console.error('Error submitting testimonial:', err);
+        alert('Unable to submit your testimonial. Please try again later.');
+      }
     }
   };
   

@@ -1,20 +1,37 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { CheckCircle } from 'lucide-react';
-import { incrementFamiliesCount } from '../services/statsService';
+import { incrementFamiliesCountInSupabase } from '../services/supabaseService';
+import { useSupabaseInit } from '../hooks/useSupabase';
 
 const AssignRequest = () => {
   const [searchParams] = useSearchParams();
   const [assigned, setAssigned] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   const name = searchParams.get('name') || 'Client';
   const email = searchParams.get('email') || '';
   
+  // Initialize Supabase
+  const { isLoading: isInitializing, error: initError } = useSupabaseInit();
+  
   useEffect(() => {
-    // Increment families count when the page loads
-    incrementFamiliesCount();
-    setAssigned(true);
-  }, []);
+    if (isInitializing || initError) return;
+    
+    const updateStats = async () => {
+      try {
+        // Increment families count when the page loads
+        await incrementFamiliesCountInSupabase();
+        setAssigned(true);
+      } catch (err) {
+        console.error('Error updating stats:', err);
+        setError('Unable to update statistics, but your assignment has been recorded.');
+        setAssigned(true); // Still mark as assigned even if stats update fails
+      }
+    };
+    
+    updateStats();
+  }, [isInitializing, initError]);
   
   return (
     <div className="min-h-screen">

@@ -1,20 +1,37 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { CheckCircle } from 'lucide-react';
-import { incrementFamiliesCount } from '../services/statsService';
+import { incrementFamiliesCountInSupabase } from '../services/supabaseService';
+import { useSupabaseInit } from '../hooks/useSupabase';
 
 const ConfirmRequest = () => {
   const [searchParams] = useSearchParams();
   const [confirmed, setConfirmed] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   const name = searchParams.get('name') || 'Client';
   const email = searchParams.get('email') || '';
   
+  // Initialize Supabase
+  const { isLoading: isInitializing, error: initError } = useSupabaseInit();
+  
   useEffect(() => {
-    // Increment families count when the page loads
-    incrementFamiliesCount();
-    setConfirmed(true);
-  }, []);
+    if (isInitializing || initError) return;
+    
+    const updateStats = async () => {
+      try {
+        // Increment the families helped counter
+        await incrementFamiliesCountInSupabase();
+        setConfirmed(true);
+      } catch (err) {
+        console.error('Error updating stats:', err);
+        setError('Unable to update statistics, but your confirmation has been recorded.');
+        setConfirmed(true); // Still mark as confirmed even if stats update fails
+      }
+    };
+    
+    updateStats();
+  }, [isInitializing, initError]);
   
   return (
     <div className="min-h-screen">

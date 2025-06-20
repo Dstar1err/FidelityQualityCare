@@ -2,29 +2,57 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, Shield, Clock, Users, Phone, CheckCircle } from 'lucide-react';
-import { getStats, getFormattedYearsOfExperience } from '../services/statsService';
-import { getSatisfactionRate } from '../services/testimonialService';
+import { getFormattedYearsOfExperience } from '../services/statsService';
+import { getStatsFromSupabase, getSatisfactionRateFromSupabase } from '../services/supabaseService';
+import { useSupabaseInit } from '../hooks/useSupabase';
 
 const Home = () => {
   // State for dynamic statistics
   const [familiesCount, setFamiliesCount] = useState<number>(95);
   const [satisfactionRate, setSatisfactionRate] = useState<number>(98);
   const [yearsOfExperience, setYearsOfExperience] = useState<string>('6+');
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   
-  // Load stats from localStorage on component mount
+  // Initialize Supabase
+  const { isLoading: isInitializing, error: initError } = useSupabaseInit();
+  
+  // Load stats from Supabase on component mount
   useEffect(() => {
-    const stats = getStats();
-    setFamiliesCount(stats.familiesCount);
-    setSatisfactionRate(getSatisfactionRate());
-    setYearsOfExperience(getFormattedYearsOfExperience());
+    if (isInitializing || initError) return;
+    
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        const stats = await getStatsFromSupabase();
+        const satisfactionRate = await getSatisfactionRateFromSupabase();
+        
+        setFamiliesCount(stats.familiesCount);
+        setSatisfactionRate(satisfactionRate);
+        setYearsOfExperience(getFormattedYearsOfExperience());
+        setIsLoading(false);
+      } catch (err) {
+        console.error('Error loading stats:', err);
+        setError('Unable to load statistics. Please try again later.');
+        setIsLoading(false);
+      }
+    };
+    
+    fetchData();
     
     // Set up an interval to check for updates
-    const interval = setInterval(() => {
-      const updatedStats = getStats();
-      setFamiliesCount(updatedStats.familiesCount);
-      setSatisfactionRate(getSatisfactionRate());
-      setYearsOfExperience(getFormattedYearsOfExperience());
-    }, 5000); // Check every 5 seconds
+    const interval = setInterval(async () => {
+      try {
+        const stats = await getStatsFromSupabase();
+        const satisfactionRate = await getSatisfactionRateFromSupabase();
+        
+        setFamiliesCount(stats.familiesCount);
+        setSatisfactionRate(satisfactionRate);
+        setYearsOfExperience(getFormattedYearsOfExperience());
+      } catch (err) {
+        console.error('Error updating stats:', err);
+      }
+    }, 10000); // Check every 10 seconds
     
     return () => clearInterval(interval);
   }, []);
