@@ -34,7 +34,7 @@ const Home = () => {
   const stats = [
     { number: yearsOfExperience, label: 'Years of experience' },
     { number: `${familiesCount}+`, label: 'Families served' },
-    { number: '24h', label: 'Availability' },
+    { number: '24h/7', label: 'Availability' },
     { number: `${satisfactionRate}%`, label: 'Client satisfaction' }
   ];
 
